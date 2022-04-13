@@ -35,8 +35,8 @@
 ## C. 参考资料
 | 编号 | 内容 |
 | ------ | ------ |
-| 1 | `LevelView` 的具体功能，参见 [视频](resources\video\1.MP4) |
-| 2 | `CropImageView` 的具体功能，参见 [视频](resources\video\2.mp4) |
+| 1 | `LevelView` 的具体功能，参见 [视频](resources/video/1.MP4) |
+| 2 | `CropImageView` 的具体功能，参见 [视频](resources/video/2.mp4) |
 
 ## D. 评估
 `刘渝` 负责的 `虚拟任务-自定义View-1` 评估（10分制）如下
