@@ -7,7 +7,8 @@ import android.view.View;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.hudunzht.cropimageview.CropImage;
+import com.hudunzht.cropimageview.CropImageActivity;
+import com.hudunzht.cropimageview.CropImgActivity;
 
 /**
  * author: ZHT
@@ -15,9 +16,9 @@ import com.hudunzht.cropimageview.CropImage;
  * desc: 主页。
  */
 public class MainActivity extends AppCompatActivity implements View.OnClickListener{
-    public MainActivity() {
-        super(R.layout.activity_main);
-    }
+//    public MainActivity() {
+//        super(R.layout.activity_main);
+//    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -31,7 +32,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         int id = v.getId();
         if (id == R.id.tv_crop) {
             Log.e("11", "11");
-            intent.setClass(this, CropImage.class);
+            intent.setClass(this, CropImageActivity.class);
             startActivity(intent);
         }
     }

@@ -3,6 +3,6 @@
     package="com.hudunzht.cropimageview">
 
     <application>
-        <activity android:name=".CropImage" />
+        <activity android:name=".CropImageActivity" />
     </application>
 </manifest>
