@@ -1,6 +1,12 @@
 package com.hudunzht.cropimageview;
+import android.content.Context;
 import android.os.Bundle;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.widget.ImageView;
+
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.constraintlayout.widget.ConstraintLayout;
 
 /**
  * author: ZHT
@@ -17,6 +23,14 @@ public class CropImageActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_crop_image);
+        init();
+    }
+
+    private void init(){
+        ConstraintLayout layout = findViewById(R.id.activity_crop_image);
+        CropImageView view = new CropImageView(this,null,0);
+        view.invalidate();
+        layout.addView(view);
     }
 
 //    private static final int ALBUM_REQUEST_CODE = 1;
