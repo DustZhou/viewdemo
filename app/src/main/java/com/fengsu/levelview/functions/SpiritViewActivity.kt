@@ -5,6 +5,7 @@ import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
+import android.opengl.Matrix
 import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
@@ -23,15 +24,18 @@ class SpiritViewActivity : AppCompatActivity(), SensorEventListener {
     private lateinit var view: SpiritView
     private lateinit var sensorManager: SensorManager
     private var sensor: Sensor? = null
+    private lateinit var matrix: Matrix
 
     private var currentTime: Long = System.currentTimeMillis() //当前时间
     private var lastTime: Long = 0 //最后移动存储的时间
     private var diffTime: Long? = null //时间差
-    private var maxSpeed: Int = 1000
+    private var maxSpeed: Int = 1500
     private var angle: Double = 0.0 //倾斜角度
     private var cos: Double = 0.0 // y/√(x^2 + y^2)
     private var rotation: Int = 0 //倾斜的角度
-    private var showText: String = "0°"
+    private var rotationX: Float = 0f //x球旋转角度
+    private var rotationY: Float = 0f //y球旋转角度
+    private var showText: String = "0°" //初始展示的度数
 
     private var x: Float = 0f //加速度x轴方向
     private var y: Float = 0f //加速度y轴方向
@@ -51,8 +55,6 @@ class SpiritViewActivity : AppCompatActivity(), SensorEventListener {
     private fun initView() {
         layout = findViewById(R.id.spirit_view)
         view = SpiritView(this, attrs = null, 0)
-        view.minimumHeight = 500
-        view.minimumWidth = 300
         view.invalidate()
         layout.addView(view)
     }
@@ -81,7 +83,7 @@ class SpiritViewActivity : AppCompatActivity(), SensorEventListener {
         //速度：不超过设置的最大速度
         val speed: Double = (sqrt(deltax * deltax + deltay * deltay + deltaz * deltaz) / diffTime!! * 10000).toDouble()
         if (speed > maxSpeed) {
-            Toast.makeText(this,"晃动速度过快",Toast.LENGTH_SHORT).show()
+//            Toast.makeText(this,"晃动速度过快",Toast.LENGTH_SHORT).show()
         } else {
             //算整体偏移角度
             cos = sqrt((x*x + y*y).toDouble()) / sqrt((x*x + y*y + z*z).toDouble())
@@ -91,9 +93,17 @@ class SpiritViewActivity : AppCompatActivity(), SensorEventListener {
                 cos = -1.0
             }
             angle = acos(cos)
-            rotation = round((180 * (angle / PI)).toFloat() - 90).toInt()
+            rotation = round((180 * (angle / PI)).toFloat() - 90).toInt() //三维抬起角度
+            rotationX = round((180 * (angle / PI)).toFloat() - 90) //x球的旋转
+            rotationY = round((180 * (angle / PI)).toFloat() - 270) //y球的旋转
+//            rotation = if (rotation in -90..-50){
+//                0
+//            } else {
+//                round((180 * (angle / PI)).toFloat() - 90).toInt()
+//            }
+            view.onDraws()
             showText = "${rotation}°"
-            view.show(showText)
+            view.show(showText, rotationX, rotationY)
 //            Log.e("角度", showText)
         }
         lastTime = currentTime
@@ -111,7 +121,7 @@ class SpiritViewActivity : AppCompatActivity(), SensorEventListener {
     override fun onResume() {
         super.onResume()
         sensor?.also { light ->
-            sensorManager.registerListener(this, light, SensorManager.SENSOR_DELAY_NORMAL)
+            sensorManager.registerListener(this, light, SensorManager.SENSOR_DELAY_GAME)
         }
     }
 }
