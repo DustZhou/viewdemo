@@ -7,7 +7,7 @@ android {
     compileSdk 32
 
     defaultConfig {
-        applicationId "com.task.myview"
+        applicationId "com.fengsu.levelview"
         minSdk 21
         targetSdk 32
         versionCode 1

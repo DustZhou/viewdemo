@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">SpiritLevel</string>
+    <string name="main_title">功能示例</string>
+    <string name="spirit_function">1、水平仪功能</string>
 </resources>
