@@ -2,11 +2,11 @@ package com.fengsu.levelview.functions
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.content.res.TypedArray
 import android.graphics.*
 import android.util.AttributeSet
+import android.util.Log
 import android.view.View
-import com.fengsu.levelview.R
+
 
 /**
  * author: liuyu
@@ -24,88 +24,99 @@ class SpiritView @JvmOverloads constructor(
      * 文字默认白色，与其中一个球相交部分为黑色，其他为白色
      * x球和y球重合时，球为绿色，且外环为白色
      */
-    private var xRotation: Float = 0f //x球旋转角度
-    private var yRotation: Float = 0f //y球旋转角度
+    private var textRotation: Float = 0f //文字旋转角度
+    private var rotations: Float = 0f //旋转角度
     private var backColor: Int = Color.BLACK //背景颜色
     private var xballColor: Int = Color.WHITE //x球的颜色
     private var yballColor: Int = Color.WHITE //y球的颜色
-    private var xballMargin: Float = width/2f //x球的颜色
-    private var yballMargin: Float = 250f //y球的颜色
     private var textColor: Int = Color.WHITE //文字颜色
     private var showText: String = "" //文本
-    private lateinit var canvas: Canvas
-    private var bitmap: Bitmap=Bitmap.createBitmap(10,10,Bitmap.Config.ARGB_8888)
-    private lateinit var canvas1: Canvas
-    private var bitmap1: Bitmap=Bitmap.createBitmap(10,10,Bitmap.Config.ARGB_8888)
+    private var currx: Float = 0f //水平位移
+    private var curry: Float = 0f //垂直位移
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec)
         setMeasuredDimension(widthMeasureSpec, heightMeasureSpec)
-        initView(context, attrs = null)
     }
 
     @SuppressLint("DrawAllocation")
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
-        val pxBall = Paint()
-        pxBall.color = xballColor
-        val pText = Paint(Paint.ANTI_ALIAS_FLAG)
-        pText.textAlign = Paint.Align.CENTER
-        pText.color = Color.WHITE
-        pText.textSize = 200f
-        /**
-         * drawcircle: 左上角为顶点，x向下，y向右
-         * cx: 距顶部距离，cy: 距左边距离，radius: 圆的半径
-         */
-//        canvas.rotate(rotationText, width/2f, height/2f) //旋转整个屏幕
-//        val matrixValues: FloatArray = floatArrayOf(1f, 0f, 0f, 0f, -1f, 0f, 0f, 0f, 1f)
-//        matrix.setValues(matrixValues)
-//        matrix.reset()
-//        matrix.setRotate(190f)
-//        matrix.preTranslate(100f, 800f)
-//        canvas.setMatrix(matrix)
-//        val bitmap: Bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.RGB_565)
-//        val ret = Bitmap.createBitmap(bitmap, 0, 0, width, height, matrix, true)
-//        canvas.drawBitmap(bitmap, matrix, pp)
-        bitmap1 = Bitmap.createBitmap(width,height,Bitmap.Config.ARGB_8888)
-        canvas1 = Canvas(bitmap1)
-        canvas1.save()
-        canvas1.rotate(xRotation,width/2f,height/2f)
-        canvas1.drawCircle(width/2f, 220f, 220f, pxBall)
-        canvas1.restore()
-        canvas.drawText(showText, width/2f, height/2f, pText)
-        canvas.drawBitmap(bitmap,0f,0f,null)
-        canvas.drawBitmap(bitmap1,0f,0f,null)
+        if (rotations != 0.0f) {
+            val pxBall = Paint()
+            val pyBall = Paint()
+            pxBall.color = xballColor
+            pyBall.color = yballColor
+            pxBall.isAntiAlias = true
+            pxBall.isDither = true
+            pyBall.isAntiAlias = true
+            pyBall.isDither = true
+            val pText = Paint(Paint.ANTI_ALIAS_FLAG)
+            pText.textAlign = Paint.Align.CENTER
+            pText.color = textColor
+            pText.textSize = 200f
+            /**
+             * drawcircle: 左上角为顶点，x向下，y向右
+             * cx: 距顶部距离，cy: 距左边距离，radius: 圆的半径
+             */
+            var layerId: Int = canvas.saveLayer(0f, 0f, width.toFloat(), height.toFloat(), null)
+            pxBall.xfermode = PorterDuffXfermode(PorterDuff.Mode.XOR)
+            canvas.drawColor(backColor)
+            //上面球
+            canvas.save()
+            canvas.drawCircle(width/2f - currx * 150, height/2f - curry * 150, 220f, pxBall)
+            canvas.restore()
+            //对称球
+            canvas.save()
+            xballColor = Color.BLACK
+            canvas.rotate(180f,width/2f,height/2f)
+            canvas.drawCircle(width/2f - currx * 150, height/2f - curry * 150, 220f, pxBall)
+            canvas.restore()
+            //文本样式
+            pText.xfermode = PorterDuffXfermode(PorterDuff.Mode.XOR)
+            canvas.save()
+            textColor = Color.BLACK
+            canvas.rotate(textRotation,width/2f,height/2f)
+            canvas.drawText(showText, width/2f + 30, height/2f + 30, pText)
+            canvas.restore()
+            canvas.restoreToCount(layerId)
+        } else {
+            val paint = Paint()
+            paint.color = Color.WHITE
+            val paintText = Paint(Paint.ANTI_ALIAS_FLAG)
+            paintText.textAlign = Paint.Align.CENTER
+            paintText.textSize = 200f
+            paintText.color = Color.WHITE
+            canvas.drawColor(Color.GREEN)
+
+            canvas.save()
+            paint.style = Paint.Style.STROKE // Style 修改为画线模式
+            paint.strokeWidth = 8f // 线条宽度为 20 像素
+            canvas.drawCircle(width/2f, height/2f, 220f, paint)
+            canvas.restore()
+
+            canvas.save()
+            canvas.rotate(textRotation,width/2f,height/2f)
+            canvas.drawText(showText, width/2f + 40, height/2f + 43, paintText)
+            canvas.restore()
+        }
+
     }
 
     fun onDraws(){
-        val pyBall = Paint()
-        pyBall.color = yballColor
-        bitmap = Bitmap.createBitmap(width,height,Bitmap.Config.ARGB_8888)
-        canvas = Canvas(bitmap)
-        canvas.save()
-        canvas.rotate(yRotation, width/2f, height/2f)
-        canvas.drawCircle(width/2f, 220f, 220f, pyBall)
-        canvas.restore()
         invalidate()
     }
 
 
 
-    fun show(showText: String, rotationX: Float, rotationY: Float) {
+
+    fun show(rotations: Float, showText: String, currx: Float, curry: Float, textRotation: Float) {
+        this.rotations = rotations
+        this.textRotation = textRotation
         this.showText = showText
-        this.xRotation = rotationX
-        this.yRotation = rotationY
+        this.currx = currx
+        this.curry = curry
         invalidate()
-    }
-
-    override fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
-        super.onLayout(changed, left, top, right, bottom)
-    }
-
-    @SuppressLint("Recycle", "CustomViewStyleable")
-    private fun initView(context: Context, attrs: AttributeSet?) {
-        val mTypedArray: TypedArray = context.obtainStyledAttributes(attrs, R.styleable.spiritview)
     }
 
 }

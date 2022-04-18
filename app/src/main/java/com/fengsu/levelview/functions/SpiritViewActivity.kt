@@ -5,10 +5,8 @@ import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
-import android.opengl.Matrix
 import android.os.Bundle
 import android.util.Log
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
 import com.fengsu.levelview.R
@@ -24,7 +22,6 @@ class SpiritViewActivity : AppCompatActivity(), SensorEventListener {
     private lateinit var view: SpiritView
     private lateinit var sensorManager: SensorManager
     private var sensor: Sensor? = null
-    private lateinit var matrix: Matrix
 
     private var currentTime: Long = System.currentTimeMillis() //当前时间
     private var lastTime: Long = 0 //最后移动存储的时间
@@ -36,6 +33,9 @@ class SpiritViewActivity : AppCompatActivity(), SensorEventListener {
     private var rotationX: Float = 0f //x球旋转角度
     private var rotationY: Float = 0f //y球旋转角度
     private var showText: String = "0°" //初始展示的度数
+    private var currDistance: Double = 0.0 //当前距离
+    private var currx: Float = 0f //平移的X距离
+    private var curry: Float = 0f //平移的Y距离
 
     private var x: Float = 0f //加速度x轴方向
     private var y: Float = 0f //加速度y轴方向
@@ -96,15 +96,30 @@ class SpiritViewActivity : AppCompatActivity(), SensorEventListener {
             rotation = round((180 * (angle / PI)).toFloat() - 90).toInt() //三维抬起角度
             rotationX = round((180 * (angle / PI)).toFloat() - 90) //x球的旋转
             rotationY = round((180 * (angle / PI)).toFloat() - 270) //y球的旋转
-//            rotation = if (rotation in -90..-50){
-//                0
-//            } else {
-//                round((180 * (angle / PI)).toFloat() - 90).toInt()
-//            }
+
+            //算两球的运动轨迹
+            val dirCos: Double = z / sqrt(x*x + z*z).toDouble()
+            val oblCos: Double = y / sqrt(x*x + y*y).toDouble()
+            val rotCos: Double = x / sqrt(y*y + z*z).toDouble()
+            val dirAngle: Double = acos(dirCos)
+            val oblAngle: Double = acos(oblCos)
+            val rotAngle: Double = acos(rotCos)
+            val dirRotation: Float = round((360 * (dirAngle / PI)).toFloat()) //方向角（绕z轴旋转）
+            val oblRotation: Float = round((360 * (oblAngle / PI)).toFloat() - 90) //倾斜角（绕y轴旋转）
+            val rotRotation: Float = round((180 * (rotAngle / PI)).toFloat() - 180) //旋转角（绕x轴旋转）
+            Log.e("方向角","$dirRotation")
+            Log.e("倾斜角","$oblRotation")
+            Log.e("旋转角","$rotRotation")
+            currDistance = (view.height / 45.0) * (oblRotation * oblRotation)
+            currx = x
+            curry = y
+//            currx = round(currDistance * oblCos).toFloat()
+//            curry = round(currDistance * (x / sqrt(x*x + y*y))).toFloat()//sin
+
             view.onDraws()
             showText = "${rotation}°"
-            view.show(showText, rotationX, rotationY)
-//            Log.e("角度", showText)
+            Log.e("倾斜角度",showText)
+            view.show(rotation.toFloat(), showText, currx, curry, dirRotation)
         }
         lastTime = currentTime
         currentTime = System.currentTimeMillis()
@@ -121,7 +136,7 @@ class SpiritViewActivity : AppCompatActivity(), SensorEventListener {
     override fun onResume() {
         super.onResume()
         sensor?.also { light ->
-            sensorManager.registerListener(this, light, SensorManager.SENSOR_DELAY_GAME)
+            sensorManager.registerListener(this, light, SensorManager.SENSOR_DELAY_NORMAL)
         }
     }
 }
