@@ -2,17 +2,18 @@ package com.hudunzht.cropimageview;
 
 import android.content.Context;
 import android.content.res.TypedArray;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Path;
-import android.graphics.Point;
 import android.graphics.PointF;
 import android.graphics.Rect;
 import android.graphics.RectF;
+import android.net.Uri;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.MotionEvent;
 
 import androidx.annotation.NonNull;
@@ -33,24 +34,21 @@ public class CropImageView extends AppCompatImageView {
     private float mY_1 = 0;
     //当前触摸得到的点
     private PointF mNowPoint;
+    private PointF mLastPoint;
     //触摸事件的判断；
     private final int STATUS_SINGLE = 1;
     private final int STATUS_MULTI_START = 2;
     private final int STATUS_MULTI_TOUCHING = 3;
+    private int mType = 10;
     //当前状态；
     private int mStatus = STATUS_SINGLE;
     //八个关键点的静态属性
-    private final int EDGE_LT = 1;
-    private final int EDGE_RT = 2;
-    private final int EDGE_LB = 3;
-    private final int EDGE_RB = 4;
-    private final int EDGE_L = 5;
-    private final int EDGE_T = 6;
-    private final int EDGE_B = 7;
-    private final int EDGE_R = 8;
-    private final int EDGE_MOVE_IN = 9;
-    private final int EDGE_MOVE_OUT = 10;
-    private final int EDGE_NONE = 11;
+    private final int EDGE_MOVE_IN = 8;
+    private final int EDGE_MOVE_OUT = 9;
+    private final int EDGE_NONE = 10;
+    private final int Radius;
+    //原图Bitmap
+
     /**
      * 裁剪框属性
      */
@@ -83,13 +81,8 @@ public class CropImageView extends AppCompatImageView {
     private PointF[] mPoint;
     //图片铺满imageview
     private float[] mValue;
-
     //上下文；
     protected Context mContext;
-
-//    public CropImageView(Context context){
-//        this(context,null,0);
-//    }
 
     /**
      * 在activity中new一个cropimageview需要此方法
@@ -117,9 +110,12 @@ public class CropImageView extends AppCompatImageView {
         partitionWidth = array.getInteger(R.styleable.CropImageView_partitionWidth, 5);
         //边框宽度
         frameWidth = array.getInteger(R.styleable.CropImageView_frameWidth, 10);
-
+        //触摸半径
+        Radius = array.getInteger(R.styleable.CropImageView_Radius, 50);
+        //默认裁剪宽高
+        cropHeigh = array.getInteger(R.styleable.CropImageView_cropHeigh, 200);
+        cropWidth = array.getInteger(R.styleable.CropImageView_cropWidth, 200);
         array.recycle();
-
         init();
     }
 
@@ -129,11 +125,22 @@ public class CropImageView extends AppCompatImageView {
         mPaint.setColor(lineColor);
         mPaint.setStyle(Paint.Style.STROKE);
         mPaint.setAntiAlias(true);
+
         mRectF = new RectF();
         mRectFOri = new RectF();
+
         mPath = new Path();
         mValue = new float[9];
-        mPoint = new PointF[7];
+
+        mPoint = new PointF[8];
+        for (int i = 0; i < 8; ++i) {
+            mPoint[i] = new PointF();
+        }
+
+        mNowPoint = new PointF();
+        mLastPoint = new PointF();
+
+
     }
 
     /**
@@ -152,16 +159,12 @@ public class CropImageView extends AppCompatImageView {
                 //图片在view中左顶点位置。
                 float startX = mValue[Matrix.MTRANS_X];//起始x值
                 float startY = mValue[Matrix.MTRANS_Y];//起始y值
-
-                Log.e("mrchen",scaleX+":"+scaleY+"::"+startX+"::"+startY);
                 //裁剪框最开始与view中图片一样大
-                mRectF.set(startX,startY,startX + scaleX * rect.width(), startY + scaleY * rect.height());
+                mRectF.set(startX, startY, startX + scaleX * rect.width(), startY + scaleY * rect.height());
                 CropRectPoints();
                 isCropRectFill = true;//mRectFOri只设置一次，mRectF根据onTouchEvent动态变化
                 //固定的图片承载矩形的大小。
-                mRectFOri.set(mRectF.left,mRectF.top,mRectF.right,mRectF.bottom);
-            } else {
-                Log.e("mrchen","11");
+                mRectFOri.set(mRectF.left, mRectF.top, mRectF.right, mRectF.bottom);
             }
             //绘制剪切框中的分割线；
             mPaint.setStrokeWidth(partitionWidth);
@@ -214,18 +217,19 @@ public class CropImageView extends AppCompatImageView {
      * 定义点的位置，一共有八个点，用于确定裁剪框位置大小。
      */
     private void CropRectPoints() {
-    mPoint[0].set(mRectF.left,mRectF.bottom);//左下点
-    mPoint[1].set(mRectF.left,mRectF.bottom - mRectF.height() / 2);
-    mPoint[2].set(mRectF.left,mRectF.top);
-    mPoint[3].set(mRectF.left + mRectF.width() / 2,mRectF.top);
-    mPoint[4].set(mRectF.right,mRectF.top);
-    mPoint[5].set(mRectF.right,mRectF.top + mRectF.height() / 2);
-    mPoint[6].set(mRectF.right,mRectF.bottom);
-    mPoint[7].set(mRectF.right - mRectF.width() / 2,mRectF.bottom);
+        mPoint[0].set(mRectF.left, mRectF.bottom);//左下点
+        mPoint[1].set(mRectF.left, mRectF.bottom - mRectF.height() / 2);
+        mPoint[2].set(mRectF.left, mRectF.top);
+        mPoint[3].set(mRectF.left + mRectF.width() / 2, mRectF.top);
+        mPoint[4].set(mRectF.right, mRectF.top);
+        mPoint[5].set(mRectF.right, mRectF.top + mRectF.height() / 2);
+        mPoint[6].set(mRectF.right, mRectF.bottom);
+        mPoint[7].set(mRectF.right - mRectF.width() / 2, mRectF.bottom);
     }
 
     /**
      * 两点之间的距离
+     *
      * @param p1
      * @param p2
      * @return
@@ -235,8 +239,9 @@ public class CropImageView extends AppCompatImageView {
         float dy = p1.y - p2.y;
         return (float) Math.sqrt(dx * dx + dy * dy);
     }
+
     @Override
-    public boolean onTouchEvent(MotionEvent event){
+    public boolean onTouchEvent(MotionEvent event) {
 
         if (event.getPointerCount() > 1) {
             if (mStatus == STATUS_SINGLE) {
@@ -253,18 +258,237 @@ public class CropImageView extends AppCompatImageView {
             mStatus = STATUS_SINGLE;
         }
         try {
-            mX_1 = event.getX();
-            mY_1 = event.getY();
-            mNowPoint.set(mX_1,mY_1);
             switch (event.getAction()) {
-                case MotionEvent.ACTION_DOWN:
+                case MotionEvent.ACTION_DOWN: {
+                    //判断点在不在8个按钮上
+                    //赋值type
+                    mX_1 = event.getX();
+                    mY_1 = event.getY();
+                    mNowPoint.set(mX_1, mY_1);
+                    mType = 10;
+                    for (int i = 0; i < mPoint.length; ++i) {
+                        if (Radius >= distance(mPoint[i], mNowPoint)) {
+                            mType = i;
+                            break;
+                        }
+                    }
+                    if (mType == 10) {
+                        if (mRectF.contains(mX_1, mY_1)) {
+                            mType = EDGE_MOVE_IN;
+                        }
+                    }
+                    mLastPoint.set(mNowPoint.x, mNowPoint.y);
+                }
+                case MotionEvent.ACTION_MOVE: {
 
+                    onTouchMove(event);
+                    invalidate();
+                    mLastPoint.set(mNowPoint.x, mNowPoint.y);
+                }
+                case MotionEvent.ACTION_UP: {
+                    CropRectPoints();
+                }
             }
-        }catch (){
-
+        } catch (Exception e) {
+            e.printStackTrace();
         }
+        return true;
+    }
 
+    private void onTouchMove(MotionEvent event) {
+        mNowPoint.set(event.getX(), event.getY());
+        float dx = mNowPoint.x - mLastPoint.x;
+        float dy = mNowPoint.y - mLastPoint.y;
+        if (mType == EDGE_MOVE_IN) {
+            //到达边界的判断
+            if (mRectFOri.left > mRectF.left + dx) {
+                dx = mRectFOri.left - mRectF.left;
+            }
+            if (mRectFOri.right < mRectF.right + dx) {
+                dx = mRectFOri.right - mRectF.right;
+            }
+            if (mRectFOri.top > mRectF.top + dy) {
+                dy = mRectFOri.top - mRectF.top;
+            }
+            if (mRectFOri.bottom < mRectF.bottom + dy) {
+                dy = mRectFOri.bottom - mRectF.bottom;
+            }
+            //移动整个裁剪框
+            mRectF.offset(dx, dy);
+        } else {
+            switch (mType) {
+                case 0:
+                    //左边界
+                    if (mRectFOri.left > mRectF.left + dx) {
+                        mRectFOri.left = mRectF.left;
+                    } else {
+                        mRectF.left = mRectF.left + dx;
+                        //最小裁剪框
+                        if (mRectF.width() < cropWidth) {
+                            mRectF.left = mRectF.right - cropWidth;
+                        }
+                    }
+                    //下边界
+                    if (mRectFOri.bottom < mRectF.bottom + dy) {
+                        mRectFOri.bottom = mRectF.bottom;
+                    } else {
+                        mRectF.bottom = mRectF.bottom + dy;
+                        //最小裁剪框
+                        if (mRectF.height() < cropHeigh) {
+                            mRectF.bottom = mRectF.top + cropHeigh;
+                        }
+                    }
+                    break;
+                case 1:
+                    //左边界
+                    if (mRectFOri.left > mRectF.left + dx) {
+                        mRectFOri.left = mRectF.left;
+                    } else {
+                        mRectF.left = mRectF.left + dx;
+                        //最小裁剪框
+                        if (mRectF.width() < cropWidth) {
+                            mRectF.left = mRectF.right - cropWidth;
+                        }
+                    }
+                    break;
+                case 2:
+                    //左边界
+                    if (mRectFOri.left > mRectF.left + dx) {
+                        mRectFOri.left = mRectF.left;
+                    } else {
+                        mRectF.left = mRectF.left + dx;
+                        //最小裁剪框
+                        if (mRectF.width() < cropWidth) {
+                            mRectF.left = mRectF.right - cropWidth;
+                        }
+                    }
+                    //上边界
+                    if (mRectFOri.top > mRectF.top + dy) {
+                        mRectFOri.top = mRectF.top;
+                    } else {
+                        mRectF.top = mRectF.top + dy;
+                        //最小裁剪框
+                        if (mRectF.height() < cropHeigh) {
+                            mRectF.top = mRectF.bottom - cropHeigh;
+                        }
+                    }
+                    break;
+                case 3:
+                    //上边界
+                    if (mRectFOri.top > mRectF.top + dy) {
+                        mRectFOri.top = mRectF.top;
+                    } else {
+                        mRectF.top = mRectF.top + dy;
+                        //最小裁剪框
+                        if (mRectF.height() < cropHeigh) {
+                            mRectF.top = mRectF.bottom - cropHeigh;
+                        }
+                    }
+                    break;
+                case 4:
+                    //右边界
+                    if (mRectFOri.right < mRectF.right + dx) {
+                        mRectFOri.right = mRectF.right;
+                    } else {
+                        mRectF.right = mRectF.right + dx;
+                        //最小裁剪框
+                        if (mRectF.width() < cropWidth) {
+                            mRectF.right = mRectF.left + cropWidth;
+                        }
+                    }
+                    //上边界
+                    if (mRectFOri.top > mRectF.top + dy) {
+                        mRectFOri.top = mRectF.top;
+                    } else {
+                        mRectF.top = mRectF.top + dy;
+                        //最小裁剪框
+                        if (mRectF.height() < cropHeigh) {
+                            mRectF.top = mRectF.bottom - cropHeigh;
+                        }
+                    }
+                    break;
+                case 5:
+                    //右边界
+                    if (mRectFOri.right < mRectF.right + dx) {
+                        mRectFOri.right = mRectF.right;
+                    } else {
+                        mRectF.right = mRectF.right + dx;
+                        //最小裁剪框
+                        if (mRectF.width() < cropWidth) {
+                            mRectF.right = mRectF.left + cropWidth;
+                        }
+                    }
+                    break;
+                case 6:
+                    //右边界
+                    if (mRectFOri.right < mRectF.right + dx) {
+                        mRectFOri.right = mRectF.right;
+                    } else {
+                        mRectF.right = mRectF.right + dx;
+                        //最小裁剪框
+                        if (mRectF.width() < cropWidth) {
+                            mRectF.right = mRectF.left + cropWidth;
+                        }
+                    }
+                    //下边界
+                    if (mRectFOri.bottom < mRectF.bottom + dy) {
+                        mRectFOri.bottom = mRectF.bottom;
+                    } else {
+                        mRectF.bottom = mRectF.bottom + dy;
+                        //最小裁剪框
+                        if (mRectF.height() < cropHeigh) {
+                            mRectF.bottom = mRectF.top + cropHeigh;
+                        }
+                    }
+                    break;
+                case 7:
+                    //下边界
+                    if (mRectFOri.bottom < mRectF.bottom + dy) {
+                        mRectFOri.bottom = mRectF.bottom;
+                    } else {
+                        mRectF.bottom = mRectF.bottom + dy;
+                        //最小裁剪框
+                        if (mRectF.height() < cropHeigh) {
+                            mRectF.bottom = mRectF.top + cropHeigh;
+                        }
+                    }
+                    break;
+            }
+        }
+    }
 
+    /**
+     * 获取在原图上的裁剪区
+     */
+    public RectF getCropRectF() {
+        RectF result = new RectF();
+        result.left = (mRectF.left - mRectFOri.left) / mRectFOri.width();
+        result.top = (mRectF.top - mRectFOri.top) / mRectFOri.height();
+        result.right = (mRectF.right - mRectFOri.left) / mRectFOri.width();
+        result.bottom = (mRectF.bottom - mRectFOri.top) / mRectFOri.height();
+        return result;
+    }
+
+    /**
+     * 设置在原图上的裁剪区
+     */
+    public void setCropRectF() {
+        mRectF.left = mRectFOri.left + getCropRectF().left * mRectFOri.width();
+        mRectF.top = mRectFOri.top + getCropRectF().top * mRectFOri.height();
+        mRectF.right = mRectFOri.left + getCropRectF().right * mRectFOri.width();
+        mRectF.bottom = mRectFOri.top + getCropRectF().bottom * mRectFOri.height();
+        invalidate();
+    }
+
+    //保存裁剪图片， 根据mRectF的最终坐标在画布上创建一张新的图片。
+    public Bitmap getCroImage(Bitmap tupian) {
+        getCropRectF();
+        setCropRectF();
+        Bitmap mbitmap = Bitmap.createBitmap((int) mRectF.width(), (int) mRectF.height(),
+                Bitmap.Config.RGB_565);
+        Canvas canvas = new Canvas(mbitmap);
+        canvas.drawBitmap(tupian, -mRectF.left, -mRectF.top, null);
+        return mbitmap;
     }
 }
 

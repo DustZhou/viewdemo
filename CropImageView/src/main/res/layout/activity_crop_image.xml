@@ -6,19 +6,36 @@
     android:layout_height="match_parent"
     android:id="@+id/activity_crop_image">
 
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="5641841584561864"
-        tools:ignore="MissingConstraints" />
 
     <com.hudunzht.cropimageview.CropImageView
+        android:id="@+id/crop_image"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:layout_marginLeft="20dp"
+        android:layout_marginTop="50dp"
+        android:layout_marginRight="20dp"
+        android:layout_marginBottom="200dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.228"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        android:src="@drawable/img"/>
+        app:layout_constraintVertical_bias="0.16" />
 
+    <Button
+        android:id="@+id/btn_cancel"
+        android:layout_width="100dp"
+        android:layout_height="wrap_content"
+        android:text="取消"
+        app:layout_constraintTop_toBottomOf="@+id/crop_image"
+        tools:ignore="MissingConstraints" />
+
+    <Button
+        android:id="@+id/btn_crop"
+        android:layout_width="100dp"
+        android:layout_height="wrap_content"
+        android:text="确定"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/crop_image"
+        tools:ignore="MissingConstraints" />
 </androidx.constraintlayout.widget.ConstraintLayout>
