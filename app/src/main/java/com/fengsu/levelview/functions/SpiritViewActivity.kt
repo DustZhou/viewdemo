@@ -98,13 +98,13 @@ class SpiritViewActivity : AppCompatActivity(), SensorEventListener {
             rotationY = round((180 * (angle / PI)).toFloat() - 270) //y球的旋转
 
             //算两球的运动轨迹
-            val dirCos: Double = z / sqrt(x*x + z*z).toDouble()
+            val dirCos: Double = x / sqrt(x*x + z*z).toDouble()
             val oblCos: Double = y / sqrt(x*x + y*y).toDouble()
             val rotCos: Double = x / sqrt(y*y + z*z).toDouble()
             val dirAngle: Double = acos(dirCos)
             val oblAngle: Double = acos(oblCos)
             val rotAngle: Double = acos(rotCos)
-            val dirRotation: Float = round((360 * (dirAngle / PI)).toFloat()) //方向角（绕z轴旋转）
+            val dirRotation: Float = round((360 * (dirAngle / PI)).toFloat() - 180) //方向角（绕z轴旋转）
             val oblRotation: Float = round((360 * (oblAngle / PI)).toFloat() - 90) //倾斜角（绕y轴旋转）
             val rotRotation: Float = round((180 * (rotAngle / PI)).toFloat() - 180) //旋转角（绕x轴旋转）
             Log.e("方向角","$dirRotation")
@@ -116,6 +116,7 @@ class SpiritViewActivity : AppCompatActivity(), SensorEventListener {
 //            currx = round(currDistance * oblCos).toFloat()
 //            curry = round(currDistance * (x / sqrt(x*x + y*y))).toFloat()//sin
 
+            //传感器监听事件后传值刷新页面
             view.onDraws()
             showText = "${rotation}°"
             Log.e("倾斜角度",showText)
@@ -128,11 +129,17 @@ class SpiritViewActivity : AppCompatActivity(), SensorEventListener {
     override fun onAccuracyChanged(p0: Sensor?, p1: Int) {
     }
 
+    /**
+     * 暂停传感器
+     */
     override fun onPause() {
         super.onPause()
         sensorManager.unregisterListener(this)
     }
 
+    /**
+     * 传感器监听
+     */
     override fun onResume() {
         super.onResume()
         sensor?.also { light ->

@@ -6,6 +6,7 @@ import android.graphics.*
 import android.util.AttributeSet
 import android.util.Log
 import android.view.View
+import kotlin.math.log
 
 
 /**
@@ -33,6 +34,13 @@ class SpiritView @JvmOverloads constructor(
     private var showText: String = "" //文本
     private var currx: Float = 0f //水平位移
     private var curry: Float = 0f //垂直位移
+    //不为0°的时候相关画笔
+    private val pxBall = Paint()
+    private val pyBall = Paint()
+    private val pText = Paint(Paint.ANTI_ALIAS_FLAG)
+    //等于0°的时候相关画笔
+    private val paint = Paint()
+    private val paintText = Paint(Paint.ANTI_ALIAS_FLAG)
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec)
@@ -43,15 +51,12 @@ class SpiritView @JvmOverloads constructor(
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
         if (rotations != 0.0f) {
-            val pxBall = Paint()
-            val pyBall = Paint()
             pxBall.color = xballColor
             pyBall.color = yballColor
             pxBall.isAntiAlias = true
             pxBall.isDither = true
             pyBall.isAntiAlias = true
             pyBall.isDither = true
-            val pText = Paint(Paint.ANTI_ALIAS_FLAG)
             pText.textAlign = Paint.Align.CENTER
             pText.color = textColor
             pText.textSize = 200f
@@ -59,7 +64,7 @@ class SpiritView @JvmOverloads constructor(
              * drawcircle: 左上角为顶点，x向下，y向右
              * cx: 距顶部距离，cy: 距左边距离，radius: 圆的半径
              */
-            var layerId: Int = canvas.saveLayer(0f, 0f, width.toFloat(), height.toFloat(), null)
+            val layerId: Int = canvas.saveLayer(0f, 0f, width.toFloat(), height.toFloat(), null)
             pxBall.xfermode = PorterDuffXfermode(PorterDuff.Mode.XOR)
             canvas.drawColor(backColor)
             //上面球
@@ -81,20 +86,18 @@ class SpiritView @JvmOverloads constructor(
             canvas.restore()
             canvas.restoreToCount(layerId)
         } else {
-            val paint = Paint()
             paint.color = Color.WHITE
-            val paintText = Paint(Paint.ANTI_ALIAS_FLAG)
             paintText.textAlign = Paint.Align.CENTER
             paintText.textSize = 200f
             paintText.color = Color.WHITE
             canvas.drawColor(Color.GREEN)
-
+            //空心圆
             canvas.save()
             paint.style = Paint.Style.STROKE // Style 修改为画线模式
-            paint.strokeWidth = 8f // 线条宽度为 20 像素
+            paint.strokeWidth = 8f // 线条宽度为 8 像素
             canvas.drawCircle(width/2f, height/2f, 220f, paint)
             canvas.restore()
-
+            //0°
             canvas.save()
             canvas.rotate(textRotation,width/2f,height/2f)
             canvas.drawText(showText, width/2f + 40, height/2f + 43, paintText)
