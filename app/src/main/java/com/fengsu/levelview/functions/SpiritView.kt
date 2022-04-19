@@ -82,16 +82,19 @@ class SpiritView @JvmOverloads constructor(
             val layerId: Int = canvas.saveLayer(0f, 0f, width.toFloat(), height.toFloat(), null)
             pxBall.xfermode = PorterDuffXfermode(PorterDuff.Mode.XOR)
             canvas.drawColor(backColor)
+
             //上面球
             canvas.save()
             canvas.drawCircle(ox, oy, 220f, pxBall)
             canvas.restore()
+
             //对称球
             canvas.save()
             xballColor = Color.BLACK
             canvas.rotate(180f, width / 2f, height / 2f)
             canvas.drawCircle(ox, oy, 220f, pxBall)
             canvas.restore()
+
             //文本样式
             pText.xfermode = PorterDuffXfermode(PorterDuff.Mode.XOR)
             canvas.save()
@@ -107,12 +110,14 @@ class SpiritView @JvmOverloads constructor(
             paintText.textSize = 200f
             paintText.color = Color.WHITE
             canvas.drawColor(Color.GREEN)
+
             //空心圆
             canvas.save()
             paint.style = Paint.Style.STROKE // Style 修改为画线模式
             paint.strokeWidth = 8f // 线条宽度为 8 像素
             canvas.drawCircle(width / 2f, height / 2f, 220f, paint)
             canvas.restore()
+
             //0°
             canvas.save()
             canvas.rotate(textRotation, width / 2f, height / 2f)

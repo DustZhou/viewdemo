@@ -5,4 +5,9 @@
     android:layout_height="match_parent"
     android:id="@+id/spirit_view">
 
+    <com.fengsu.levelview.LevelView
+        android:id="@+id/lv_content"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>
