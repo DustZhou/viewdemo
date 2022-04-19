@@ -37,7 +37,6 @@ public class LevelView extends View implements SensorEventListener {
     private float lasty;
     private float lastz;
     private int textColor = Color.WHITE;
-    private int xballColor = Color.WHITE;
 
     private float textRotation;
     private float rotations;
@@ -121,15 +120,6 @@ public class LevelView extends View implements SensorEventListener {
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
         Paint paint = new Paint();
-        Paint paintText = new Paint();
-        Paint pText = new Paint(Paint.ANTI_ALIAS_FLAG);
-        Paint pxBall = new Paint();
-        pxBall.setColor(xballColor);
-        pText.setTextAlign(Paint.Align.CENTER);
-        pText.setColor(textColor);
-        pText.setTextSize(200f);
-        pxBall.setAntiAlias(true);
-        pxBall.setDither(true);
         Log.e("角度",""+rotations);
         if (rotations != 0.0f) {
             paint.setColor(Color.WHITE);
@@ -144,40 +134,43 @@ public class LevelView extends View implements SensorEventListener {
             lastoy = oy;
 
             int layerId = canvas.saveLayer(0f, 0f, getWidth(), getHeight(), null);
-            pxBall.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.XOR));
+            paint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.XOR));
             canvas.drawColor(Color.BLACK);
 
             //上面球
             canvas.save();
-            canvas.drawCircle(ox, oy, 220f, pxBall);
+            canvas.drawCircle(ox, oy, 220f, paint);
             canvas.restore();
 
             //对称球
             canvas.save();
-            xballColor = Color.BLACK;
+            paint.setColor(Color.BLACK);
             canvas.rotate(180f, getWidth() / 2f, getHeight() / 2f);
-            canvas.drawCircle(ox, oy, 220f, pxBall);
+            canvas.drawCircle(ox, oy, 220f, paint);
             canvas.restore();
 
             //文本样式
-            pText.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.XOR));
+            paint.setTextAlign(Paint.Align.CENTER);
+            paint.setColor(textColor);
+            paint.setTextSize(200f);
+            paint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.XOR));
             canvas.save();
             textColor = Color.BLACK;
             canvas.rotate(textRotation, getWidth() / 2f, getHeight() / 2f);
-            canvas.drawText(showText, getWidth() / 2f + 40, getHeight() / 2f + 70, pText);
+            canvas.drawText(showText, getWidth() / 2f + 40, getHeight() / 2f + 70, paint);
             canvas.restore();
             canvas.restoreToCount(layerId);
             setLayerType(LAYER_TYPE_HARDWARE, null);
         } else {
-            paintText.setColor(Color.WHITE);
-            paintText.setTextAlign(Paint.Align.CENTER);
-            paintText.setTextSize(200f);
             canvas.drawColor(Color.GREEN);
 
             //0°
             canvas.save();
+            paint.setColor(Color.WHITE);
+            paint.setTextAlign(Paint.Align.CENTER);
+            paint.setTextSize(200f);
             canvas.rotate(textRotation, getWidth() / 2f, getHeight() / 2f);
-            canvas.drawText(showText, getWidth() / 2f + 40, getHeight() / 2f + 43, paintText);
+            canvas.drawText(showText, getWidth() / 2f + 40, getHeight() / 2f + 43, paint);
             canvas.restore();
             setLayerType(LAYER_TYPE_HARDWARE, null);
 
