@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="btn_cancel_tt">取消</string>
+    <string name="btn_crop_tt">确定</string>
+</resources>

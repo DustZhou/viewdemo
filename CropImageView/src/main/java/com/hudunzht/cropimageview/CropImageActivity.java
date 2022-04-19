@@ -31,7 +31,6 @@ public class CropImageActivity extends AppCompatActivity {
     private Button btnCrop;
     private Button btnCancel;
     private String CROP_IMAGE_PATH = "";
-    protected Bitmap tupian = null;
     private ImageView img_crop;
 
 
@@ -40,19 +39,19 @@ public class CropImageActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_crop_image);
         openAlbum(this);
-        Log.e("zht3","uri" +CROP_IMAGE_PATH);
+        Log.e("zht3", "uri" + CROP_IMAGE_PATH);
         init();
     }
 
+    /**
+     * 初始化
+     */
     private void init() {
-        img_crop=findViewById(R.id.img_crop);
+        img_crop = findViewById(R.id.img_crop);
         cropImageView = (CropImageView) findViewById(R.id.crop_image);
         btnCrop = (Button) findViewById(R.id.btn_crop);
         btnCancel = (Button) findViewById(R.id.btn_cancel);
-//        CROP_IMAGE_PATH = getIntent().getStringExtra("image/*");
-        CROP_IMAGE_PATH=getExternalCacheDir()+File.separator+"SDA";
-
-
+        CROP_IMAGE_PATH = getExternalCacheDir() + File.separator + "SDA";
         //裁剪保存
         btnCrop.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -66,8 +65,8 @@ public class CropImageActivity extends AppCompatActivity {
                 if (!file.exists()) {
                     file.mkdirs();
                 }
-                String dstPath=file.getAbsolutePath()+ File.separator;
-                File imgFile=new File(dstPath,"image.png");
+                String dstPath = file.getAbsolutePath() + File.separator;
+                File imgFile = new File(dstPath, "image.png");
                 try {
                     //保存操作
                     FileOutputStream saveImgOut = new FileOutputStream(imgFile);
@@ -81,7 +80,19 @@ public class CropImageActivity extends AppCompatActivity {
                 }
             }
         });
+        //取消裁剪
+        btnCancel.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                finish();
+            }
+        });
     }
+
+    /**
+     * 调用系统相册。在onActivityResult返回。
+     * @param activity
+     */
     public static void openAlbum(Activity activity) {
         Intent intent = new Intent(Intent.ACTION_PICK, null);
         intent.setDataAndType(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, "image/*");
@@ -95,8 +106,10 @@ public class CropImageActivity extends AppCompatActivity {
         //imageview设置图片
         try {
             cropImageView.setImageBitmap(BitmapFactory.decodeStream(getContentResolver().openInputStream(uri)));
-            Bitmap tupian  = BitmapFactory.decodeStream(getContentResolver().openInputStream(uri));
-            cropImageView.getBitmapOri(tupian);
+            //设置原图Bitmap
+            Bitmap imageOri = BitmapFactory.decodeStream(getContentResolver().openInputStream(uri));
+            //传原图Bitmap
+            cropImageView.getBitmapOri(imageOri);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }

@@ -47,7 +47,6 @@ public class CropImageView extends AppCompatImageView {
     private final int EDGE_NONE = 10;
     private final int Radius;
     //原图Bitmap
-
     /**
      * 裁剪框属性
      */
@@ -77,13 +76,14 @@ public class CropImageView extends AppCompatImageView {
     private Paint mPaint;
     private RectF mRectF;
     private RectF mRectFOri;
+    private RectF mRectFImg;
     private PointF[] mPoint;
+
     //图片铺满imageview
     private float[] mValue;
-    //上下文；
-    protected Context mContext;
 
-    private Bitmap tupian = null;
+    //原图的Bitmap。
+    private Bitmap imageOri = null;
 
     /**
      * 在activity中new一个cropimageview需要此方法
@@ -126,18 +126,15 @@ public class CropImageView extends AppCompatImageView {
         mPaint.setColor(lineColor);
         mPaint.setStyle(Paint.Style.STROKE);
         mPaint.setAntiAlias(true);
-
         mRectF = new RectF();
         mRectFOri = new RectF();
-
+        mRectFImg = new RectF();
         mPath = new Path();
         mValue = new float[9];
-
         mPoint = new PointF[8];
         for (int i = 0; i < 8; ++i) {
             mPoint[i] = new PointF();
         }
-
         mNowPoint = new PointF();
         mLastPoint = new PointF();
     }
@@ -278,12 +275,13 @@ public class CropImageView extends AppCompatImageView {
                     }
                     mLastPoint.set(mNowPoint.x, mNowPoint.y);
                 }
+                //按下后移动
                 case MotionEvent.ACTION_MOVE: {
-
                     onTouchMove(event);
                     invalidate();
                     mLastPoint.set(mNowPoint.x, mNowPoint.y);
                 }
+                //抬手确定八个点位置
                 case MotionEvent.ACTION_UP: {
                     CropRectPoints();
                 }
@@ -294,10 +292,18 @@ public class CropImageView extends AppCompatImageView {
         return true;
     }
 
+    /**
+     * 移动裁剪框
+     *
+     * @param event
+     */
     private void onTouchMove(MotionEvent event) {
+        //当前点坐标
         mNowPoint.set(event.getX(), event.getY());
+        //移动时x，y的差值
         float dx = mNowPoint.x - mLastPoint.x;
         float dy = mNowPoint.y - mLastPoint.y;
+        //不在点上，在框内。
         if (mType == EDGE_MOVE_IN) {
             //到达边界的判断
             if (mRectFOri.left > mRectF.left + dx) {
@@ -315,6 +321,7 @@ public class CropImageView extends AppCompatImageView {
             //移动整个裁剪框
             mRectF.offset(dx, dy);
         } else {
+            //在点上
             switch (mType) {
                 case 0:
                     //左边界
@@ -477,25 +484,33 @@ public class CropImageView extends AppCompatImageView {
         //图片原始尺寸与view的比例。
         float scaleX = mValue[Matrix.MSCALE_X];//水平比例尺
         float scaleY = mValue[Matrix.MSCALE_Y];
-        mRectF.left = mRectFOri.width() * getCropRectF().left / scaleX;
-        mRectF.top = mRectFOri.height() * getCropRectF().top / scaleY;
-        mRectF.right = mRectFOri.width() * getCropRectF().right / scaleX;
-        mRectF.bottom = mRectFOri.height() *getCropRectF().bottom / scaleY;
+        mRectFImg.left = mRectFOri.width() * getCropRectF().left / scaleX;
+        mRectFImg.top = mRectFOri.height() * getCropRectF().top / scaleY;
+        mRectFImg.right = mRectFOri.width() * getCropRectF().right / scaleX;
+        mRectFImg.bottom = mRectFOri.height() * getCropRectF().bottom / scaleY;
+        invalidate();
     }
 
-    //保存裁剪图片， 根据mRectF的最终坐标在画布上创建一张新的图片。
-    public Bitmap getBitmapOri(Bitmap tupian) {
-        this.tupian = tupian;
-        return tupian;
+    /**
+     * 获取原图Bitmap
+     *
+     * @param imageOri
+     * @return
+     */
+    public Bitmap getBitmapOri(Bitmap imageOri) {
+        this.imageOri = imageOri;
+        return imageOri;
     }
-
+    /**
+     * 保存裁剪图片， 根据mRectF的最终坐标在画布上创建一张新的图片。
+     */
     public Bitmap getCroImage() {
         setCropRectF();
-        getBitmapOri(tupian);
+        getBitmapOri(imageOri);
         Bitmap mbitmap = Bitmap.createBitmap((int) mRectF.width(), (int) mRectF.height(),
                 Bitmap.Config.RGB_565);
         Canvas canvas = new Canvas(mbitmap);
-        canvas.drawBitmap(tupian, -mRectF.left, -mRectF.top, null);
+        canvas.drawBitmap(imageOri, -mRectFImg.left, -mRectFImg.top, null);
         return mbitmap;
     }
 }
