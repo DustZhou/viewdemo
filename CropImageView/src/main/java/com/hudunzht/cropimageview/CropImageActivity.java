@@ -10,6 +10,7 @@ import android.provider.MediaStore;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -29,8 +30,9 @@ public class CropImageActivity extends AppCompatActivity {
     private CropImageView cropImageView;
     private Button btnCrop;
     private Button btnCancel;
-    protected Bitmap tupian;
     private String CROP_IMAGE_PATH = "";
+    protected Bitmap tupian = null;
+    private ImageView img_crop;
 
 
     @Override
@@ -43,11 +45,12 @@ public class CropImageActivity extends AppCompatActivity {
     }
 
     private void init() {
+        img_crop=findViewById(R.id.img_crop);
         cropImageView = (CropImageView) findViewById(R.id.crop_image);
         btnCrop = (Button) findViewById(R.id.btn_crop);
         btnCancel = (Button) findViewById(R.id.btn_cancel);
 //        CROP_IMAGE_PATH = getIntent().getStringExtra("image/*");
-        CROP_IMAGE_PATH=getExternalCacheDir()+"/IMAGE_UP/";
+        CROP_IMAGE_PATH=getExternalCacheDir()+File.separator+"SDA";
 
 
         //裁剪保存
@@ -56,20 +59,25 @@ public class CropImageActivity extends AppCompatActivity {
             public void onClick(View view) {
                 //获取bitmap
                 Bitmap cropImage = cropImageView.getCroImage();
+                img_crop.setImageBitmap(cropImage);
                 //文件存储路径
                 File file = new File(CROP_IMAGE_PATH);
                 //判断文件夹路径是否存在
                 if (!file.exists()) {
                     file.mkdirs();
                 }
+                String dstPath=file.getAbsolutePath()+ File.separator;
+                File imgFile=new File(dstPath,"image.png");
                 try {
                     //保存操作
-                    FileOutputStream saveImgOut = new FileOutputStream(file);
-                    cropImage.compress(Bitmap.CompressFormat.JPEG, 90, saveImgOut);
+                    FileOutputStream saveImgOut = new FileOutputStream(imgFile);
+                    cropImage.compress(Bitmap.CompressFormat.PNG, 100, saveImgOut);
                     saveImgOut.flush();
                     saveImgOut.close();
                 } catch (IOException ex) {
                     ex.printStackTrace();
+                    ex.getMessage();
+                    Log.e("mrchen", ex.getMessage());
                 }
             }
         });
@@ -84,17 +92,14 @@ public class CropImageActivity extends AppCompatActivity {
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         Uri uri = data.getData();
-        getUri(uri);
-        //imageview设置图片
-    }
-    public Uri getUri(Uri uri){
         //imageview设置图片
         try {
             cropImageView.setImageBitmap(BitmapFactory.decodeStream(getContentResolver().openInputStream(uri)));
+            Bitmap tupian  = BitmapFactory.decodeStream(getContentResolver().openInputStream(uri));
+            cropImageView.getBitmapOri(tupian);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
         System.out.println("相册获取");
-        return uri;
     }
 }

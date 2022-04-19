@@ -12,7 +12,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_marginLeft="20dp"
-        android:layout_marginTop="50dp"
+        android:layout_marginTop="40dp"
         android:layout_marginRight="20dp"
         android:layout_marginBottom="200dp"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -22,11 +22,27 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.16" />
 
+    <ImageView
+        android:id="@+id/img_crop"
+        android:layout_width="100dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="40dp"
+        android:adjustViewBounds="true"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/crop_image"
+        tools:ignore="MissingConstraints" />
+
     <Button
         android:id="@+id/btn_cancel"
         android:layout_width="100dp"
         android:layout_height="wrap_content"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="10dp"
         android:text="取消"
+        app:layout_constraintEnd_toStartOf="@+id/img_crop"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/crop_image"
         tools:ignore="MissingConstraints" />
 
@@ -34,8 +50,11 @@
         android:id="@+id/btn_crop"
         android:layout_width="100dp"
         android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:layout_marginEnd="20dp"
         android:text="确定"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/img_crop"
         app:layout_constraintTop_toBottomOf="@+id/crop_image"
         tools:ignore="MissingConstraints" />
 </androidx.constraintlayout.widget.ConstraintLayout>

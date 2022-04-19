@@ -3,7 +3,6 @@ package com.hudunzht.cropimageview;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Matrix;
@@ -12,8 +11,8 @@ import android.graphics.Path;
 import android.graphics.PointF;
 import android.graphics.Rect;
 import android.graphics.RectF;
-import android.net.Uri;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.MotionEvent;
 
 import androidx.annotation.NonNull;
@@ -84,6 +83,8 @@ public class CropImageView extends AppCompatImageView {
     //上下文；
     protected Context mContext;
 
+    private Bitmap tupian = null;
+
     /**
      * 在activity中new一个cropimageview需要此方法
      */
@@ -99,22 +100,22 @@ public class CropImageView extends AppCompatImageView {
 
         TypedArray array = context.obtainStyledAttributes(attrs, R.styleable.CropImageView);
         //间隔
-        interval = array.getInteger(R.styleable.CropImageView_interval, 20);
+        interval = array.getInteger(R.styleable.CropImageView_interval, 8);
         //顶点距离
-        lengthVertex = array.getInteger(R.styleable.CropImageView_lengthVertex, 40);
+        lengthVertex = array.getInteger(R.styleable.CropImageView_lengthVertex, 20);
         //中点距离
-        lengthMidpoint = array.getInteger(R.styleable.CropImageView_lengthMidpoint, 40);
+        lengthMidpoint = array.getInteger(R.styleable.CropImageView_lengthMidpoint, 20);
         //线的颜色
         lineColor = array.getColor(R.styleable.CropImageView_lineColor, Color.BLACK);
         //分割线的宽度
-        partitionWidth = array.getInteger(R.styleable.CropImageView_partitionWidth, 5);
+        partitionWidth = array.getInteger(R.styleable.CropImageView_partitionWidth, 2);
         //边框宽度
-        frameWidth = array.getInteger(R.styleable.CropImageView_frameWidth, 10);
+        frameWidth = array.getInteger(R.styleable.CropImageView_frameWidth, 5);
         //触摸半径
-        Radius = array.getInteger(R.styleable.CropImageView_Radius, 50);
+        Radius = array.getInteger(R.styleable.CropImageView_Radius, 60);
         //默认裁剪宽高
-        cropHeigh = array.getInteger(R.styleable.CropImageView_cropHeigh, 200);
-        cropWidth = array.getInteger(R.styleable.CropImageView_cropWidth, 200);
+        cropHeigh = array.getInteger(R.styleable.CropImageView_cropHeigh, 300);
+        cropWidth = array.getInteger(R.styleable.CropImageView_cropWidth, 300);
         array.recycle();
         init();
     }
@@ -139,8 +140,6 @@ public class CropImageView extends AppCompatImageView {
 
         mNowPoint = new PointF();
         mLastPoint = new PointF();
-
-
     }
 
     /**
@@ -466,6 +465,7 @@ public class CropImageView extends AppCompatImageView {
         result.top = (mRectF.top - mRectFOri.top) / mRectFOri.height();
         result.right = (mRectF.right - mRectFOri.left) / mRectFOri.width();
         result.bottom = (mRectF.bottom - mRectFOri.top) / mRectFOri.height();
+        Log.e("zht", "shuju" + mRectFOri.height());
         return result;
     }
 
@@ -473,17 +473,25 @@ public class CropImageView extends AppCompatImageView {
      * 设置在原图上的裁剪区
      */
     public void setCropRectF() {
-        mRectF.left = mRectFOri.left + getCropRectF().left * mRectFOri.width();
-        mRectF.top = mRectFOri.top + getCropRectF().top * mRectFOri.height();
-        mRectF.right = mRectFOri.left + getCropRectF().right * mRectFOri.width();
-        mRectF.bottom = mRectFOri.top + getCropRectF().bottom * mRectFOri.height();
-        invalidate();
+        getImageMatrix().getValues(mValue);
+        //图片原始尺寸与view的比例。
+        float scaleX = mValue[Matrix.MSCALE_X];//水平比例尺
+        float scaleY = mValue[Matrix.MSCALE_Y];
+        mRectF.left = mRectFOri.width() * getCropRectF().left / scaleX;
+        mRectF.top = mRectFOri.height() * getCropRectF().top / scaleY;
+        mRectF.right = mRectFOri.width() * getCropRectF().right / scaleX;
+        mRectF.bottom = mRectFOri.height() *getCropRectF().bottom / scaleY;
     }
 
     //保存裁剪图片， 根据mRectF的最终坐标在画布上创建一张新的图片。
-    public Bitmap getCroImage(Bitmap tupian) {
-        getCropRectF();
+    public Bitmap getBitmapOri(Bitmap tupian) {
+        this.tupian = tupian;
+        return tupian;
+    }
+
+    public Bitmap getCroImage() {
         setCropRectF();
+        getBitmapOri(tupian);
         Bitmap mbitmap = Bitmap.createBitmap((int) mRectF.width(), (int) mRectF.height(),
                 Bitmap.Config.RGB_565);
         Canvas canvas = new Canvas(mbitmap);
