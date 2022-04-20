@@ -1,6 +1,7 @@
 package com.hudunzht.cropimageview;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -11,6 +12,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -32,6 +34,7 @@ public class CropImageActivity extends AppCompatActivity {
     private Button btnCancel;
     private String CROP_IMAGE_PATH = "";
     private ImageView img_crop;
+    private Context context;
 
 
     @Override
@@ -47,11 +50,15 @@ public class CropImageActivity extends AppCompatActivity {
      * 初始化
      */
     private void init() {
+        //初始化控件
         img_crop = findViewById(R.id.img_crop);
         cropImageView = (CropImageView) findViewById(R.id.crop_image);
         btnCrop = (Button) findViewById(R.id.btn_crop);
         btnCancel = (Button) findViewById(R.id.btn_cancel);
+        //保存路径
         CROP_IMAGE_PATH = getExternalCacheDir() + File.separator + "SDA";
+        //上下文
+        context=getApplicationContext();
         //裁剪保存
         btnCrop.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -73,9 +80,11 @@ public class CropImageActivity extends AppCompatActivity {
                     cropImage.compress(Bitmap.CompressFormat.PNG, 100, saveImgOut);
                     saveImgOut.flush();
                     saveImgOut.close();
+                    Toast.makeText(context, "裁剪成功！", Toast.LENGTH_SHORT).show();
                 } catch (IOException ex) {
                     ex.printStackTrace();
                     ex.getMessage();
+                    Toast.makeText(context, "保存失败！", Toast.LENGTH_SHORT).show();
                     Log.e("mrchen", ex.getMessage());
                 }
             }

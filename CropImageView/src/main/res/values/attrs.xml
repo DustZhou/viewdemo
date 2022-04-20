@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="CircleImageView">
+        <attr name="radius" format="dimension" />
+    </declare-styleable>
+    <!--自定义view属性，在xml中加入需要attrs-->
+    <declare-styleable name="CropImageView">
+        <!--点与裁剪线间隔-->
+        <attr name="interval" format="integer" />
+        <!--顶点两边的距离-->
+        <attr name="lengthVertex" format="integer" />
+        <!--中点两边的距离-->
+        <attr name="lengthMidpoint" format="integer" />
+
+        <!-- 线条的颜色 -->
+        <attr name="lineColor" format="color" />
+        <!--分割线宽度-->
+        <attr name="partitionWidth" format="integer" />
+        <!--边框宽度-->
+        <attr name="frameWidth" format="integer" />
+        <!--触摸半径-->
+        <attr name="Radius" format="integer" />
+        <!--默认裁剪宽高-->
+        <attr name="cropWidth" format="integer"/>
+        <attr name="cropHeigh" format="integer"/>
+
+    </declare-styleable>
+</resources>
