@@ -15,6 +15,7 @@ import android.hardware.SensorManager;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.View;
+import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.constraintlayout.widget.ConstraintLayout;
@@ -30,19 +31,19 @@ public class LevelView extends View implements SensorEventListener {
     private Sensor sensor;
 
     private long currentTime = System.currentTimeMillis();
-    private long lastTime;
-    private String showText = "0°";
-    private float currx;
-    private float curry;
-    private float lastx;
-    private float lasty;
-    private float lastz;
-    private int textColor = Color.WHITE;
+    private long lastTime; //上一次存储的时间
+    private String showText = "0°";  //中间显示的文字
+    private float currx; //水平方向平移的距离
+    private float curry; //垂直方向平移的距离
+    private float lastx; //存储后的传感器坐标x
+    private float lasty; //存储后的传感器坐标y
+    private float lastz; //存储后的传感器坐标z
+    private int textColor = Color.WHITE; //中间文字颜色
 
-    private float textRotation;
-    private float rotations;
-    private float lastox;
-    private float lastoy;
+    private float textRotation; //文字旋转的角度
+    private float rotations; //三维抬起角度
+    private float lastox; //存储的圆心x
+    private float lastoy; //存储的圆心y
 
     public LevelView(Context context) {
         super(context);
@@ -78,6 +79,8 @@ public class LevelView extends View implements SensorEventListener {
          * 改变的时间和位置
          */
         long diffTime = currentTime - lastTime;
+
+        //获取传感器坐标值
         float x = sensorEvent.values[0];
         float y = sensorEvent.values[1];
         float z = sensorEvent.values[2];
@@ -97,18 +100,24 @@ public class LevelView extends View implements SensorEventListener {
                 cos = -1.0;
             }
             double angle = Math.acos(cos);
-            int rotation = (int) Math.round((180 * (angle / Math.PI)) - 90); //三维抬起角度
+
+            //三维抬起角度
+            int rotation = (int) Math.round((180 * (angle / Math.PI)) - 90);
             double dirCos = x / Math.sqrt(x * x + z * z);
             double dirAngle = Math.acos(dirCos);
-            float dirRotation = Math.round((360 * (dirAngle / Math.PI)) - 180); //方向角（绕z轴旋转）
+
+            //方向角（绕z轴旋转）
+            float dirRotation = Math.round((360 * (dirAngle / Math.PI)) - 180);
             currx = x;
             curry = y;
             showText = rotation + "°";
             rotations = rotation;
             textRotation = dirRotation;
-            Log.e("aaaaa",""+rotation);
             invalidate();
-        }  //            else: Toast.makeText(this,"晃动速度过快", Toast.LENGTH_SHORT).show();
+        }
+        else {
+//            Toast.makeText(this, "晃动速度过快", Toast.LENGTH_SHORT).show();
+        }
         lastTime = currentTime;
         currentTime = System.currentTimeMillis();
     }
