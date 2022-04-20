@@ -74,8 +74,11 @@ public class CropImageView extends AppCompatImageView {
      */
     private Path mPath;
     private Paint mPaint;
+    //裁剪框。
     private RectF mRectF;
+    //呈图的框。
     private RectF mRectFOri;
+    //原图上的裁剪框。
     private RectF mRectFImg;
     private PointF[] mPoint;
 
@@ -501,13 +504,14 @@ public class CropImageView extends AppCompatImageView {
         this.imageOri = imageOri;
         return imageOri;
     }
+
     /**
      * 保存裁剪图片， 根据mRectF的最终坐标在画布上创建一张新的图片。
      */
     public Bitmap getCroImage() {
         setCropRectF();
         getBitmapOri(imageOri);
-        Bitmap mbitmap = Bitmap.createBitmap((int) mRectF.width(), (int) mRectF.height(),
+        Bitmap mbitmap = Bitmap.createBitmap((int) mRectFImg.width(), (int) mRectFImg.height(),
                 Bitmap.Config.RGB_565);
         Canvas canvas = new Canvas(mbitmap);
         canvas.drawBitmap(imageOri, -mRectFImg.left, -mRectFImg.top, null);

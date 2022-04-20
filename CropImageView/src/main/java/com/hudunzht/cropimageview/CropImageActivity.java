@@ -114,9 +114,9 @@ public class CropImageActivity extends AppCompatActivity {
         Uri uri = data.getData();
         //imageview设置图片
         try {
-            cropImageView.setImageBitmap(BitmapFactory.decodeStream(getContentResolver().openInputStream(uri)));
-            //设置原图Bitmap
             Bitmap imageOri = BitmapFactory.decodeStream(getContentResolver().openInputStream(uri));
+            //设置原图Bitmap
+            cropImageView.setImageBitmap(imageOri);
             //传原图Bitmap
             cropImageView.getBitmapOri(imageOri);
         } catch (FileNotFoundException e) {
