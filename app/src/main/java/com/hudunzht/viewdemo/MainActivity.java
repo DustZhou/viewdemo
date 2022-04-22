@@ -1,15 +1,15 @@
 package com.hudunzht.viewdemo;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
-import android.provider.MediaStore;
 import android.util.Log;
 import android.view.View;
 
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.hudunzht.cropimageview.CropImageActivity;
+import com.hudunzht.cropimageview.CropImgActivity;
+import com.hudunzht.cropimageview.SquareCropImageActivity;
 
 /**
  * author: ZHT
@@ -27,6 +27,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         findViewById(R.id.tv_crop).setOnClickListener(this);
+        findViewById(R.id.tv_square_crop).setOnClickListener(this);
+        findViewById(R.id.tv_crop_tv).setOnClickListener(this);
     }
 
     @Override
@@ -35,8 +37,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         int id = v.getId();
         if (id == R.id.tv_crop) {
             Log.e("11", "11");
-
             intent.setClass(this, CropImageActivity.class);
+            startActivity(intent);
+        }
+        if (id == R.id.tv_square_crop) {
+            Log.e("11", "11");
+            intent.setClass(this, SquareCropImageActivity.class);
+            startActivity(intent);
+        }
+        if (id == R.id.tv_crop_tv) {
+            Log.e("11", "11");
+            intent.setClass(this, CropImgActivity.class);
             startActivity(intent);
         }
     }

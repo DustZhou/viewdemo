@@ -80,6 +80,7 @@ public class CropImageView extends AppCompatImageView {
     private RectF mRectFOri;
     //原图上的裁剪框。
     private RectF mRectFImg;
+    //关键点
     private PointF[] mPoint;
 
     //图片铺满imageview
@@ -160,8 +161,9 @@ public class CropImageView extends AppCompatImageView {
                 float startY = mValue[Matrix.MTRANS_Y];//起始y值
                 //裁剪框最开始与view中图片一样大
                 mRectF.set(startX, startY, startX + scaleX * rect.width(), startY + scaleY * rect.height());
-                CropRectPoints();
-                isCropRectFill = true;//mRectFOri只设置一次，mRectF根据onTouchEvent动态变化
+                cropRectPoints();
+                isCropRectFill = true;
+                //mRectFOri只设置一次，mRectF根据onTouchEvent动态变化
                 //固定的图片承载矩形的大小。
                 mRectFOri.set(mRectF.left, mRectF.top, mRectF.right, mRectF.bottom);
             }
@@ -215,7 +217,7 @@ public class CropImageView extends AppCompatImageView {
     /**
      * 定义点的位置，一共有八个点，用于确定裁剪框位置大小。
      */
-    private void CropRectPoints() {
+    private void cropRectPoints() {
         mPoint[0].set(mRectF.left, mRectF.bottom);//左下点
         mPoint[1].set(mRectF.left, mRectF.bottom - mRectF.height() / 2);
         mPoint[2].set(mRectF.left, mRectF.top);
@@ -241,7 +243,6 @@ public class CropImageView extends AppCompatImageView {
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-
         if (event.getPointerCount() > 1) {
             if (mStatus == STATUS_SINGLE) {
                 mStatus = STATUS_MULTI_START;
@@ -286,7 +287,7 @@ public class CropImageView extends AppCompatImageView {
                 }
                 //抬手确定八个点位置
                 case MotionEvent.ACTION_UP: {
-                    CropRectPoints();
+                    cropRectPoints();
                 }
             }
         } catch (Exception e) {
@@ -308,7 +309,7 @@ public class CropImageView extends AppCompatImageView {
         float dy = mNowPoint.y - mLastPoint.y;
         //不在点上，在框内。
         if (mType == EDGE_MOVE_IN) {
-            //到达边界的判断
+//            到达边界的判断
             if (mRectFOri.left > mRectF.left + dx) {
                 dx = mRectFOri.left - mRectF.left;
             }
@@ -323,13 +324,29 @@ public class CropImageView extends AppCompatImageView {
             }
             //移动整个裁剪框
             mRectF.offset(dx, dy);
+//            mRectF.left += dx;
+//            // fix border position
+//            if (mRectF.left < mRectFOri.left)
+//                mRectF.left = mRectFOri.left;
+//            if (mRectF.left > mRectFOri.right -  mRectF.width())
+//                mRectF.left = mRectFOri.right - mRectF.width();
+//
+//            mRectF.top += dy;
+//            if (mRectF.top < mRectFOri.top)
+//                mRectF.top = mRectFOri.top;
+//
+//            if (mRectF.top > mRectFOri.bottom - mRectF.height())
+//                mRectF.top = mRectFOri.bottom - mRectF.height();
+//
+//            mRectF.right = mRectF.left + mRectF.width();
+//            mRectF.bottom = mRectF.top + mRectF.height();
         } else {
             //在点上
             switch (mType) {
                 case 0:
                     //左边界
                     if (mRectFOri.left > mRectF.left + dx) {
-                        mRectFOri.left = mRectF.left;
+                        mRectF.left = mRectFOri.left;
                     } else {
                         mRectF.left = mRectF.left + dx;
                         //最小裁剪框
@@ -339,7 +356,7 @@ public class CropImageView extends AppCompatImageView {
                     }
                     //下边界
                     if (mRectFOri.bottom < mRectF.bottom + dy) {
-                        mRectFOri.bottom = mRectF.bottom;
+                        mRectF.bottom = mRectFOri.bottom;
                     } else {
                         mRectF.bottom = mRectF.bottom + dy;
                         //最小裁剪框
@@ -351,7 +368,7 @@ public class CropImageView extends AppCompatImageView {
                 case 1:
                     //左边界
                     if (mRectFOri.left > mRectF.left + dx) {
-                        mRectFOri.left = mRectF.left;
+                        mRectF.left =  mRectFOri.left;
                     } else {
                         mRectF.left = mRectF.left + dx;
                         //最小裁剪框
@@ -363,7 +380,7 @@ public class CropImageView extends AppCompatImageView {
                 case 2:
                     //左边界
                     if (mRectFOri.left > mRectF.left + dx) {
-                        mRectFOri.left = mRectF.left;
+                        mRectF.left =  mRectFOri.left;
                     } else {
                         mRectF.left = mRectF.left + dx;
                         //最小裁剪框
@@ -373,7 +390,7 @@ public class CropImageView extends AppCompatImageView {
                     }
                     //上边界
                     if (mRectFOri.top > mRectF.top + dy) {
-                        mRectFOri.top = mRectF.top;
+                        mRectF.top = mRectFOri.top;
                     } else {
                         mRectF.top = mRectF.top + dy;
                         //最小裁剪框
@@ -385,7 +402,7 @@ public class CropImageView extends AppCompatImageView {
                 case 3:
                     //上边界
                     if (mRectFOri.top > mRectF.top + dy) {
-                        mRectFOri.top = mRectF.top;
+                        mRectF.top = mRectFOri.top;
                     } else {
                         mRectF.top = mRectF.top + dy;
                         //最小裁剪框
@@ -397,7 +414,7 @@ public class CropImageView extends AppCompatImageView {
                 case 4:
                     //右边界
                     if (mRectFOri.right < mRectF.right + dx) {
-                        mRectFOri.right = mRectF.right;
+                        mRectF.right = mRectFOri.right;
                     } else {
                         mRectF.right = mRectF.right + dx;
                         //最小裁剪框
@@ -407,7 +424,7 @@ public class CropImageView extends AppCompatImageView {
                     }
                     //上边界
                     if (mRectFOri.top > mRectF.top + dy) {
-                        mRectFOri.top = mRectF.top;
+                        mRectF.top = mRectFOri.top;
                     } else {
                         mRectF.top = mRectF.top + dy;
                         //最小裁剪框
@@ -419,7 +436,7 @@ public class CropImageView extends AppCompatImageView {
                 case 5:
                     //右边界
                     if (mRectFOri.right < mRectF.right + dx) {
-                        mRectFOri.right = mRectF.right;
+                        mRectF.right = mRectFOri.right;
                     } else {
                         mRectF.right = mRectF.right + dx;
                         //最小裁剪框
@@ -431,7 +448,7 @@ public class CropImageView extends AppCompatImageView {
                 case 6:
                     //右边界
                     if (mRectFOri.right < mRectF.right + dx) {
-                        mRectFOri.right = mRectF.right;
+                        mRectF.right = mRectFOri.right;
                     } else {
                         mRectF.right = mRectF.right + dx;
                         //最小裁剪框
@@ -441,7 +458,7 @@ public class CropImageView extends AppCompatImageView {
                     }
                     //下边界
                     if (mRectFOri.bottom < mRectF.bottom + dy) {
-                        mRectFOri.bottom = mRectF.bottom;
+                        mRectF.bottom = mRectFOri.bottom;
                     } else {
                         mRectF.bottom = mRectF.bottom + dy;
                         //最小裁剪框
@@ -453,7 +470,7 @@ public class CropImageView extends AppCompatImageView {
                 case 7:
                     //下边界
                     if (mRectFOri.bottom < mRectF.bottom + dy) {
-                        mRectFOri.bottom = mRectF.bottom;
+                        mRectF.bottom = mRectFOri.bottom;
                     } else {
                         mRectF.bottom = mRectF.bottom + dy;
                         //最小裁剪框

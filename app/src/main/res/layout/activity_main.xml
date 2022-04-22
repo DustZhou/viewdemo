@@ -25,4 +25,22 @@
         android:text="@string/tvcrop"
         app:layout_constraintTop_toBottomOf="@+id/title"
         tools:ignore="MissingConstraints" />
+
+    <TextView
+        android:id="@+id/tv_square_crop"
+        style="@style/buttonStyle"
+        android:layout_width="match_parent"
+        android:text="@string/tvsquarecrop"
+        app:layout_constraintTop_toBottomOf="@+id/tv_crop"
+        tools:ignore="MissingConstraints" />
+
+    <TextView
+        android:id="@+id/tv_crop_tv"
+        style="@style/buttonStyle"
+        android:layout_width="match_parent"
+        android:text="@string/tvcrop"
+        android:visibility="gone"
+        app:layout_constraintTop_toBottomOf="@+id/tv_square_crop"
+        tools:ignore="MissingConstraints" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>
